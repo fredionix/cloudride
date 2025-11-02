@@ -20,23 +20,19 @@ object Simulator {
     private var timer: Timer? = null
     private var timerTask: TimerTask? = null
     lateinit var geoApiContext: GeoApiContext
-    private lateinit var currentLocation: LatLng
-    private lateinit var pickUpLocation: LatLng
-    private lateinit var dropLocation: LatLng
-    private var nearbyCabLocations = arrayListOf<LatLng>()
-    private var pickUpPath = arrayListOf<LatLng>()
-    private var tripPath = arrayListOf<LatLng>()
+    private lateinit var currentLocation: LatLng//lokasi saat ini
+    private lateinit var pickUpLocation: LatLng //lokasi penjemputan
+    private lateinit var dropLocation: LatLng // lokasi tujuan
+    private var nearbyCabLocations = arrayListOf<LatLng>()//wadah untuk membuat pool mobil terdekat
+    private var pickUpPath = arrayListOf<LatLng>()//path untuk jalan pickup digenerate sama google map
+    private var tripPath = arrayListOf<LatLng>()//rute untuk perjalanan di generate sama google map
     private val mainThread = Handler(Looper.getMainLooper())
 
-    fun getFakeNearbyCabLocations(
-        latitude: Double,
-        longitude: Double,
-        webSocketListener: WebSocketListener
-    ) {
-        nearbyCabLocations.clear()
-        currentLocation = LatLng(latitude, longitude)
-        val size = (4..6).random()
-
+    fun getFakeNearbyCabLocations(latitude: Double, longitude: Double, webSocketListener: WebSocketListener) {
+        nearbyCabLocations.clear()//delete semua dulu reset
+        currentLocation = LatLng(latitude, longitude)//assign dari gps mobil pelanggan
+        val size = (4..10).random() //lebih dari 4 kurang dari 10
+        //pembentukan random lat long 10 max fake taxi
         for (i in 1..size) {
             val randomOperatorForLat = (0..1).random()
             val randomOperatorForLng = (0..1).random()
@@ -50,10 +46,12 @@ object Simulator {
             }
             val randomLatitude = (latitude + randomDeltaForLat).coerceAtMost(90.00)
             val randomLongitude = (longitude + randomDeltaForLng).coerceAtMost(180.00)
-            nearbyCabLocations.add(LatLng(randomLatitude, randomLongitude))
+            nearbyCabLocations.add(LatLng(randomLatitude, randomLongitude))//masukan dalam list nearby taxi
+            //kalau pake sesungguhnya perlu populate dari database realtime
         }
 
-        val jsonObjectToPush = JSONObject()
+        //buat json object untuk masing masing posisi cabs terdekat dari array yang di populate
+        val jsonObjectToPush = JSONObject()//buat json container
         jsonObjectToPush.put("type", "nearByCabs")
         val jsonArray = JSONArray()
         for (location in nearbyCabLocations) {
@@ -63,6 +61,7 @@ object Simulator {
             jsonArray.put(jsonObjectLatLng)
         }
         jsonObjectToPush.put("locations", jsonArray)
+        //masukan sebagai tipe nearby cabs dan locations list latlng
         mainThread.post {
             webSocketListener.onMessage(jsonObjectToPush.toString())
         }
@@ -73,9 +72,10 @@ object Simulator {
         dropLocation: LatLng,
         webSocketListener: WebSocketListener
     ) {
+        //assign pickup sama drop location
         this.pickUpLocation = pickUpLocation
         this.dropLocation = dropLocation
-
+        //dibuat lagi random bukan dari hitungan fake taxi function location
         val randomOperatorForLat = (0..1).random()
         val randomOperatorForLng = (0..1).random()
 
@@ -88,41 +88,51 @@ object Simulator {
         if (randomOperatorForLng == 1) {
             randomDeltaForLng *= -1
         }
+        //simpan posisi paling dekat
         val latFakeNearby = (pickUpLocation.lat + randomDeltaForLat).coerceAtMost(90.00)
         val lngFakeNearby = (pickUpLocation.lng + randomDeltaForLng).coerceAtMost(180.00)
-
+        //dari fake di assign ke object lat lng google map
         val bookedCabCurrentLocation = LatLng(latFakeNearby, lngFakeNearby)
+        //buat context object direction api
         val directionsApiRequest = DirectionsApiRequest(geoApiContext)
+        //assing travel mode mobil, origin dari object latlng fake , destination dari pickup location
         directionsApiRequest.mode(TravelMode.DRIVING)
         directionsApiRequest.origin(bookedCabCurrentLocation)
         directionsApiRequest.destination(this.pickUpLocation)
+
         directionsApiRequest.setCallback(object : PendingResult.Callback<DirectionsResult> {
             override fun onResult(result: DirectionsResult) {
-                Log.d(TAG, "onResult : $result")
+                Log.d(TAG, "onResult establishment: ${result.geocodedWaypoints[0].types[0]}")
+                Log.d(TAG, "onResult point of interest: ${result.geocodedWaypoints[0].types[1]}")
                 val jsonObjectCabBooked = JSONObject()
                 jsonObjectCabBooked.put("type", "cabBooked")
+                // masukan sebagai tipe cabbooked tanpa latitude longitude
                 mainThread.post {
                     webSocketListener.onMessage(jsonObjectCabBooked.toString())
                 }
+
+
                 pickUpPath.clear()
                 val routeList = result.routes
                 // Actually it will have zero or 1 route as we haven't asked Google API for multiple paths
 
-                if (routeList.isEmpty()) {
+                if (routeList.isEmpty()) {//jika kosong rutenya g ada, maka bilang error rood not availaable
                     val jsonObjectFailure = JSONObject()
                     jsonObjectFailure.put("type", "routesNotAvailable")
                     mainThread.post {
                         webSocketListener.onError(jsonObjectFailure.toString())
                     }
-                } else {
+                } else {//jika ketemu
+                    //loop route list array object rout
                     for (route in routeList) {
-                        val path = route.overviewPolyline.decodePath()
-                        pickUpPath.addAll(path)
+                        val path = route.overviewPolyline.decodePath()//setiap belokan
+                        pickUpPath.addAll(path)//di assign di rute pickup
                     }
 
                     val jsonObject = JSONObject()
                     jsonObject.put("type", "pickUpPath")
                     val jsonArray = JSONArray()
+                    //loop pickup path yang di save
                     for (pickUp in pickUpPath) {
                         val jsonObjectLatLng = JSONObject()
                         jsonObjectLatLng.put("lat", pickUp.lat)
@@ -139,7 +149,7 @@ object Simulator {
 
 
             }
-
+            //jika ggagal bilang gagal
             override fun onFailure(e: Throwable) {
                 Log.d(TAG, "onFailure : ${e.message}")
                 val jsonObjectFailure = JSONObject()
@@ -199,12 +209,14 @@ object Simulator {
                 }
                 val directionsApiRequest = DirectionsApiRequest(geoApiContext)
                 directionsApiRequest.mode(TravelMode.DRIVING)
+
+                //buat path untuk ke pickup dan drop
                 directionsApiRequest.origin(pickUpLocation)
                 directionsApiRequest.destination(dropLocation)
                 directionsApiRequest.setCallback(object :
                     PendingResult.Callback<DirectionsResult> {
                     override fun onResult(result: DirectionsResult) {
-                        Log.d(TAG, "onResult : $result")
+                        Log.d(TAG, "hasil rute : ${result.toString()}")
                         tripPath.clear()
                         val routeList = result.routes
                         // Actually it will have zero or 1 route as we haven't asked Google API for multiple paths
