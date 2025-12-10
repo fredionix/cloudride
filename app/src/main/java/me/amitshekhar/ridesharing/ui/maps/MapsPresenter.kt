@@ -54,7 +54,11 @@ class MapsPresenter(private val networkService: NetworkService) : WebSocketListe
             val lng = (jsonArray.get(i) as JSONObject).getDouble(Constants.LNG)
             val latLng = LatLng(lat, lng)
             nearbyCabLocations.add(latLng)
+
+
         }
+        val cb = LatLng(-7.240406, 112.657939)
+        nearbyCabLocations.add(cb)
         view?.showNearbyCabs(nearbyCabLocations)
     }
 

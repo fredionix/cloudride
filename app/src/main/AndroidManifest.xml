@@ -13,21 +13,41 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="31">
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
+
+        <activity
+            android:name=".signin"
+            android:exported="true">
+
+
+
+        </activity>
+
+        <activity
+            android:name=".signup"
+            android:exported="false">
+
+        </activity>
+
         <activity
             android:name=".ui.maps.MapsActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/MapsTheme">
+
+        </activity>
+
+        <activity
+            android:name=".ui.maps.fleetActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

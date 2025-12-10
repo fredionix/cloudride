@@ -1,5 +1,6 @@
 package me.amitshekhar.ridesharing.ui.maps
 
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -8,11 +9,13 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -39,6 +42,8 @@ import me.amitshekhar.ridesharing.utils.PermissionUtils
 import me.amitshekhar.ridesharing.utils.ViewUtils
 
 class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
+    // get role
+    val role = "fleet"
 
     companion object {
         private const val TAG = "MapsActivity"
@@ -66,6 +71,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //diatas layout
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         ViewUtils.enableTransparentStatusBar(window)
@@ -73,13 +79,16 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         mapFragment.getMapAsync(this)
         presenter = MapsPresenter(NetworkService())
         presenter.onAttach(this)
+        //memangggil untuk fungsi standby ketika di klik
         setUpClickListener()
     }
 
     private fun setUpClickListener() {
+        //origin listener autocomplete
         binding.pickUpTextView.setOnClickListener {
             launchLocationAutoCompleteActivity(PICKUP_REQUEST_CODE)
         }
+        //tujuan listener
         binding.dropTextView.setOnClickListener {
             launchLocationAutoCompleteActivity(DROP_REQUEST_CODE)
         }
@@ -90,6 +99,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
             binding.pickUpTextView.isEnabled = false
             binding.dropTextView.isEnabled = false
             presenter.requestCab(pickUpLatLng!!, dropLatLng!!)
+
         }
         binding.nextRideButton.setOnClickListener {
             reset()
@@ -132,18 +142,25 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         binding.pickUpTextView.text = getString(R.string.current_location)
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun enableMyLocationOnMap() {
         googleMap.setPadding(0, ViewUtils.dpToPx(48f), 0, 0)
         googleMap.isMyLocationEnabled = true
     }
+    private fun broadcastLocation() {
+        currentLatLng
 
+    }
+
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun setUpLocationListener() {
         fusedLocationProviderClient = FusedLocationProviderClient(this)
         // for getting the current location update after every 2 seconds
         val locationRequest = LocationRequest().setInterval(2000).setFastestInterval(2000)
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setPriority(PRIORITY_HIGH_ACCURACY)
 
         locationCallback = object : LocationCallback() {
+            @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
                 if (currentLatLng == null) {
@@ -209,6 +226,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
     override fun onStart() {
         super.onStart()
+        // check if get gps
         if (currentLatLng == null) {
             when {
                 PermissionUtils.isAccessFineLocationGranted(this) -> {
@@ -239,6 +257,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         super.onDestroy()
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -352,24 +371,27 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         }
         polylineAnimator.start()
     }
-
+//membuuat marker berjalan
+    //input latlng update
     override fun updateCabLocation(latLng: LatLng) {
         if (movingCabMarker == null) {
             movingCabMarker = addCarMarkerAndGet(latLng)
         }
         if (previousLatLngFromServer == null) {
-            currentLatLngFromServer = latLng
-            previousLatLngFromServer = currentLatLngFromServer
-            movingCabMarker?.position = currentLatLngFromServer!!
-            movingCabMarker?.setAnchor(0.5f, 0.5f)
-            animateCamera(currentLatLngFromServer!!)
+            currentLatLngFromServer = latLng //assign current latest potition
+            previousLatLngFromServer = currentLatLngFromServer //assign sama
+            movingCabMarker?.position = currentLatLngFromServer!! //assign sama posisi
+            movingCabMarker?.setAnchor(0.5f, 0.5f) // gambar
+            animateCamera(currentLatLngFromServer!!) // animasi
         } else {
-            previousLatLngFromServer = currentLatLngFromServer
-            currentLatLngFromServer = latLng
-            val valueAnimator = AnimationUtils.cabAnimator()
+            previousLatLngFromServer = currentLatLngFromServer // current yang sebelumnya disimpan, sebagai previous sebelum di overwrite
+            currentLatLngFromServer = latLng //assign new latest latLng
+            val valueAnimator = AnimationUtils.cabAnimator()//animate
             valueAnimator.addUpdateListener { va ->
                 if (currentLatLngFromServer != null && previousLatLngFromServer != null) {
                     val multiplier = va.animatedFraction
+                    // buat animasi sebenernya ini ditarik dari server sesuai posisi driver
+                    // next location latitude longitude dari posisi broadcast driver
                     val nextLocation = LatLng(
                         multiplier * currentLatLngFromServer!!.latitude + (1 - multiplier) * previousLatLngFromServer!!.latitude,
                         multiplier * currentLatLngFromServer!!.longitude + (1 - multiplier) * previousLatLngFromServer!!.longitude

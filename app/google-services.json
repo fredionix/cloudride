@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "508835369670",
+    "project_id": "prototipegasfleet",
+    "storage_bucket": "prototipegasfleet.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508835369670:android:64c4f9b1841f306cbafdc7",
+        "android_client_info": {
+          "package_name": "com.example.gasfleet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBl9SWdQyNAJbh867-w2RciZYbHnRJ5_xM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508835369670:android:255f5728c86f3c6cbafdc7",
+        "android_client_info": {
+          "package_name": "com.example.prototipegasfleet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBl9SWdQyNAJbh867-w2RciZYbHnRJ5_xM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508835369670:android:141aef599272ea0ebafdc7",
+        "android_client_info": {
+          "package_name": "com.example.testfleet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBl9SWdQyNAJbh867-w2RciZYbHnRJ5_xM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
