@@ -2,6 +2,8 @@ package me.amitshekhar.ridesharing.ui.maps
 
 import android.util.Log
 import com.google.android.gms.maps.model.LatLng
+import com.mongodb.kotlin.client.coroutine.MongoClient
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import me.amitshekhar.ridesharing.data.network.NetworkService
 import me.amitshekhar.ridesharing.simulator.WebSocket
 import me.amitshekhar.ridesharing.simulator.WebSocketListener
@@ -27,6 +29,8 @@ class MapsPresenter(private val networkService: NetworkService) : WebSocketListe
         webSocket.disconnect()
         view = null
     }
+
+
 
     fun requestNearbyCabs(latLng: LatLng) {
         val jsonObject = JSONObject()

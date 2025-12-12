@@ -36,11 +36,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
+    }
+    packaging{
+        resources {
+            excludes += "META-INF/native-image/**"
+        }
     }
     buildFeatures {
         viewBinding = true
@@ -48,7 +53,21 @@ android {
 }
 
 dependencies {
+    //implementation("com.github.dangiashish:Google-Direction-Api:1.6")
     implementation(project(":simulator"))
+
+
+    //implementation(platform("org.mongodb:mongodb-driver-sync-kotlin-bom")) // Check for the latest version
+
+    // Add the coroutine driver dependency
+    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:5.6.0")
+    implementation("org.mongodb:bson:5.6.1")
+
+    // Add Kotlin serialization dependencies (necessary for data class mapping)
+    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-core") // Check for the latest version
+    //implementation("org.mongodb:kotlin-serialization-bson") // Check for the latest version
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")

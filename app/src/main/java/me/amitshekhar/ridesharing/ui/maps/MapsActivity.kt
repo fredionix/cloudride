@@ -1,21 +1,24 @@
 package me.amitshekhar.ridesharing.ui.maps
-
-import android.Manifest
+import org.bson.BsonDocument
+import org.bson.BsonString
+import org.bson.BsonInt64
+import org.bson.types.ObjectId
+import org.bson.BsonObjectId
+import org.bson.json.JsonWriterSettings
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -33,6 +36,9 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.mongodb.kotlin.client.coroutine.MongoClient
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
+import kotlinx.coroutines.runBlocking
 import me.amitshekhar.ridesharing.R
 import me.amitshekhar.ridesharing.data.network.NetworkService
 import me.amitshekhar.ridesharing.databinding.ActivityMapsBinding
@@ -40,10 +46,18 @@ import me.amitshekhar.ridesharing.utils.AnimationUtils
 import me.amitshekhar.ridesharing.utils.MapUtils
 import me.amitshekhar.ridesharing.utils.PermissionUtils
 import me.amitshekhar.ridesharing.utils.ViewUtils
+import java.net.URI
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+
+import com.mongodb.ConnectionString
+import com.mongodb.MongoClientSettings
+import org.bson.Document
+import kotlinx.coroutines.runBlocking
+import org.bson.BsonTimestamp
+
 
 class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
-    // get role
-    val role = "fleet"
 
     companion object {
         private const val TAG = "MapsActivity"
@@ -69,6 +83,9 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
     private var currentLatLngFromServer: LatLng? = null
     private var movingCabMarker: Marker? = null
 
+    data class fleetStatus(val fleetLicensePlate: String, val latitude: String, val longitude: String, val capacity: Double,val timestamp: Instant)
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //diatas layout
@@ -79,10 +96,53 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         mapFragment.getMapAsync(this)
         presenter = MapsPresenter(NetworkService())
         presenter.onAttach(this)
+        runBlocking {
+            val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:10409/" // Replace with your actual connection string
+
+            val settings = MongoClientSettings.builder()
+                .applyConnectionString(ConnectionString(connectionStringUri))
+                .build()
+
+            val mongoClient = MongoClient.create(settings)
+
+            try {
+                val database = mongoClient.getDatabase("commoride_main") // Use your database name
+                val collection = database.getCollection<fleetStatus>("masterFleet")
+
+                val now: Instant = Clock.System.now()
+                //println("Current UTC Instant: $now")
+                //val command = Document("ping", 1)
+                val doc = fleetStatus("L 5701 DDY", "-7.248069","112.657252", 1000.0,now)
+                val result = collection.insertOne(doc)
+                println("Document inserted successfully!")
+                val insertedId = result.insertedId
+                println("Inserted ID: $insertedId")
+
+
+                //val command2 = BsonDocument("dbStats", BsonInt64(1))
+                //val commandResult = database.runCommand(command2)
+                //println(commandResult.toJson(JsonWriterSettings.builder().indent(true).build()))
+
+                println("Pinged your deployment. You successfully connected to MongoDB!")
+            } catch (e: Exception) {
+                println("Connection failed: $e")
+            } finally {
+                println("Connection failed")
+                mongoClient.close()
+            }
+        }
+
+
+
         //memangggil untuk fungsi standby ketika di klik
         setUpClickListener()
     }
+    fun getDatabase(): MongoDatabase{
 
+
+        val client = MongoClient.create(connectionString = "mongodb://0.tcp.ap.ngrok.io:14384/")
+        return client.getDatabase(databaseName = "commoride")
+    }
     private fun setUpClickListener() {
         //origin listener autocomplete
         binding.pickUpTextView.setOnClickListener {
@@ -99,6 +159,12 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
             binding.pickUpTextView.isEnabled = false
             binding.dropTextView.isEnabled = false
             presenter.requestCab(pickUpLatLng!!, dropLatLng!!)
+            //Intent intent = new Intent(Intent.ACTION_VIEW)
+            //val uri = Uri.parse("http://maps.google.co.in/maps?q=loc:-7.247302, 112.647553")
+            //val intent = Intent(Intent.ACTION_VIEW, uri)
+            //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            //startActivity(intent)
+
 
         }
         binding.nextRideButton.setOnClickListener {
@@ -119,7 +185,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
     }
 
     private fun animateCamera(latLng: LatLng) {
-        val cameraPosition = CameraPosition.Builder().target(latLng).zoom(15.5f).build()
+        val cameraPosition = CameraPosition.Builder().target(latLng).zoom(80f).build()
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
     }
 
@@ -142,25 +208,18 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         binding.pickUpTextView.text = getString(R.string.current_location)
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun enableMyLocationOnMap() {
         googleMap.setPadding(0, ViewUtils.dpToPx(48f), 0, 0)
         googleMap.isMyLocationEnabled = true
     }
-    private fun broadcastLocation() {
-        currentLatLng
 
-    }
-
-    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun setUpLocationListener() {
         fusedLocationProviderClient = FusedLocationProviderClient(this)
         // for getting the current location update after every 2 seconds
         val locationRequest = LocationRequest().setInterval(2000).setFastestInterval(2000)
-            .setPriority(PRIORITY_HIGH_ACCURACY)
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
         locationCallback = object : LocationCallback() {
-            @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
                 if (currentLatLng == null) {
@@ -257,7 +316,6 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         super.onDestroy()
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
