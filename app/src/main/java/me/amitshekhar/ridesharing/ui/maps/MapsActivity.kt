@@ -1,4 +1,5 @@
 package me.amitshekhar.ridesharing.ui.maps
+import android.Manifest
 import org.bson.BsonDocument
 import org.bson.BsonString
 import org.bson.BsonInt64
@@ -13,7 +14,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.view.View
-import android.widget.Toast
+
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -49,6 +50,9 @@ import me.amitshekhar.ridesharing.utils.ViewUtils
 import java.net.URI
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import android.widget.Toast
+import androidx.annotation.RequiresPermission
+
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
@@ -104,6 +108,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
                 .build()
 
             val mongoClient = MongoClient.create(settings)
+
 
             try {
                 val database = mongoClient.getDatabase("commoride_main") // Use your database name
@@ -208,11 +213,13 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         binding.pickUpTextView.text = getString(R.string.current_location)
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun enableMyLocationOnMap() {
         googleMap.setPadding(0, ViewUtils.dpToPx(48f), 0, 0)
         googleMap.isMyLocationEnabled = true
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun setUpLocationListener() {
         fusedLocationProviderClient = FusedLocationProviderClient(this)
         // for getting the current location update after every 2 seconds
@@ -222,18 +229,26 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
-                if (currentLatLng == null) {
-                    for (location in locationResult.locations) {
-                        if (currentLatLng == null) {
-                            currentLatLng = LatLng(location.latitude, location.longitude)
-                            setCurrentLocationAsPickUp()
-                            enableMyLocationOnMap()
-                            moveCamera(currentLatLng!!)
-                            animateCamera(currentLatLng!!)
-                            presenter.requestNearbyCabs(currentLatLng!!)
-                        }
-                    }
-                }
+                Log.d("live_location", locationResult.locations.toString())
+                //for (location in locationResult.locations) {
+                    //if (currentLatLng == null) {
+                var lat = locationResult.locations[0].latitude
+                var long =locationResult.locations[0].longitude
+                currentLatLng = LatLng(lat, long)
+                Log.d("live_location", lat.toString())
+                Log.d("live_location", long.toString())
+
+
+                setCurrentLocationAsPickUp()
+                enableMyLocationOnMap()
+                moveCamera(currentLatLng!!)
+                animateCamera(currentLatLng!!)
+                        //presenter.requestNearbyCabs(currentLatLng!!)
+                    //}
+                //}
+
+
+
                 // Few more things we can do here:
                 // For example: Update the location of user on server
             }
@@ -328,6 +343,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
                     when {
                         PermissionUtils.isLocationEnabled(this) -> {
                             setUpLocationListener()
+
                         }
 
                         else -> {
