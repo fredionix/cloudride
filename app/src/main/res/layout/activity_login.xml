@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@color/design_default_color_secondary_variant"
+    android:padding="16dp">
+
+    <ImageView
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+         />
+    <EditText
+        android:id="@+id/username_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:hint="Username"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        android:textSize="20sp"
+
+        android:padding="18dp"
+        android:inputType="text" />
+    <EditText
+        android:id="@+id/password_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Password"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        android:textSize="20sp"
+
+        android:padding="18dp"
+        android:inputType="textPassword" />
+    <Button
+        android:id="@+id/loginBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:backgroundTint="@color/white"
+        android:textSize="20dp"
+        android:padding="18dp"
+        android:layout_marginTop="32dp"
+        android:textColor="@color/black" />
+
+    <Button
+        android:id="@+id/regBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DAFTAR"
+        android:backgroundTint="@color/white"
+        android:textSize="20dp"
+        android:padding="18dp"
+        android:layout_marginTop="32dp"
+        android:textColor="@color/black" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Social Login"
+        android:textSize="18dp"
+        android:textColor="@color/white"
+        android:layout_marginTop="32dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:gravity="center">
+        <ImageView
+            android:id="@+id/facebook_btn"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_margin="16dp" />
+        <ImageView
+            android:id="@+id/likedin_btn"
+            android:layout_width="73dp"
+            android:layout_height="85dp"
+            android:layout_margin="16dp"
+            />
+    </LinearLayout>
+</LinearLayout>

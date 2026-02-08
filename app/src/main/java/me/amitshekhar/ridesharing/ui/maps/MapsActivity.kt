@@ -87,8 +87,36 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
     private var currentLatLngFromServer: LatLng? = null
     private var movingCabMarker: Marker? = null
 
-    data class fleetStatus(val fleetLicensePlate: String, val latitude: String, val longitude: String, val capacity: Double,val timestamp: Instant)
+    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:14959/" // Replace with your actual connection string
 
+    val settings = MongoClientSettings.builder()
+        .applyConnectionString(ConnectionString(connectionStringUri))
+        .build()
+
+    val mongoClient = MongoClient.create(settings)
+    val database = mongoClient.getDatabase("commoride_main") // Use your database name
+    val collection = database.getCollection<fleetStatus>("masterFleet")
+
+    data class fleetStatus(val fleetLicensePlate: String, val latitude: String, val longitude: String, val capacity: Double,val timestamp: String)
+
+    private fun connectDB(){
+        runBlocking {
+
+
+
+            try {
+
+
+                println("Pinged your deployment. You successfully connected to MongoDB!")
+            } catch (e: Exception) {
+                println("Connection failed: $e")
+            } finally {
+                println("Connection failed")
+                mongoClient.close()
+            }
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,54 +128,21 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         mapFragment.getMapAsync(this)
         presenter = MapsPresenter(NetworkService())
         presenter.onAttach(this)
-        runBlocking {
-            val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:10409/" // Replace with your actual connection string
-
-            val settings = MongoClientSettings.builder()
-                .applyConnectionString(ConnectionString(connectionStringUri))
-                .build()
-
-            val mongoClient = MongoClient.create(settings)
+        //connectDB()
 
 
-            try {
-                val database = mongoClient.getDatabase("commoride_main") // Use your database name
-                val collection = database.getCollection<fleetStatus>("masterFleet")
-
-                val now: Instant = Clock.System.now()
-                //println("Current UTC Instant: $now")
-                //val command = Document("ping", 1)
-                val doc = fleetStatus("L 5701 DDY", "-7.248069","112.657252", 1000.0,now)
-                val result = collection.insertOne(doc)
-                println("Document inserted successfully!")
-                val insertedId = result.insertedId
-                println("Inserted ID: $insertedId")
-
-
-                //val command2 = BsonDocument("dbStats", BsonInt64(1))
-                //val commandResult = database.runCommand(command2)
-                //println(commandResult.toJson(JsonWriterSettings.builder().indent(true).build()))
-
-                println("Pinged your deployment. You successfully connected to MongoDB!")
-            } catch (e: Exception) {
-                println("Connection failed: $e")
-            } finally {
-                println("Connection failed")
-                mongoClient.close()
-            }
-        }
 
 
 
         //memangggil untuk fungsi standby ketika di klik
         setUpClickListener()
     }
-    fun getDatabase(): MongoDatabase{
-
-
-        val client = MongoClient.create(connectionString = "mongodb://0.tcp.ap.ngrok.io:14384/")
-        return client.getDatabase(databaseName = "commoride")
-    }
+//    fun getDatabase(): MongoDatabase{
+//
+//
+//        val client = MongoClient.create(connectionString = "mongodb://0.tcp.ap.ngrok.io:14959/")
+//        return client.getDatabase(databaseName = "commoride_main")
+//    }
     private fun setUpClickListener() {
         //origin listener autocomplete
         binding.pickUpTextView.setOnClickListener {
@@ -210,7 +205,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
     private fun setCurrentLocationAsPickUp() {
         pickUpLatLng = currentLatLng
-        binding.pickUpTextView.text = getString(R.string.current_location)
+        binding.pickUpTextView.text = currentLatLng.toString()
     }
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
@@ -223,10 +218,11 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
     private fun setUpLocationListener() {
         fusedLocationProviderClient = FusedLocationProviderClient(this)
         // for getting the current location update after every 2 seconds
-        val locationRequest = LocationRequest().setInterval(2000).setFastestInterval(2000)
+        val locationRequest = LocationRequest().setInterval(5000).setFastestInterval(5000)
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
         locationCallback = object : LocationCallback() {
+            @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
                 Log.d("live_location", locationResult.locations.toString())
@@ -239,10 +235,36 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
                 Log.d("live_location", long.toString())
 
 
+
+                //val command2 = BsonDocument("dbStats", BsonInt64(1))
+                //val commandResult = database.runCommand(command2)
+                //println(commandResult.toJson(JsonWriterSettings.builder().indent(true).build()))s
+
+
+
+//                val doc = fleetStatus("L 5701 DDY", lat.toString(),long.toString(), 1000.0,Clock.System.now())
+//                val result = collection.insertOne(doc)
+//                println("Document inserted successfully!")
+//                val insertedId = result.insertedId
+//                println("Inserted ID: $insertedId")
+
+
                 setCurrentLocationAsPickUp()
                 enableMyLocationOnMap()
+
                 moveCamera(currentLatLng!!)
                 animateCamera(currentLatLng!!)
+                runBlocking {
+
+                    val now: Instant = Clock.System.now()
+                    println("Current UTC Instant: $now")
+                    val command = Document("ping", 1)
+                    val doc = fleetStatus("L 5701 DDY", lat.toString(), long.toString(), 1000.0, now.toString())
+                    val result = collection.insertOne(doc)
+                    println("Document inserted successfully!")
+                    val insertedId = result.insertedId
+                    println("Inserted ID: $insertedId")
+                }
                         //presenter.requestNearbyCabs(currentLatLng!!)
                     //}
                 //}
@@ -331,6 +353,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         super.onDestroy()
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

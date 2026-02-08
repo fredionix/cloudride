@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:508835369670:android:4c1441fe4ad421dfbafdc7",
+        "android_client_info": {
+          "package_name": "com.bracketcove.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBl9SWdQyNAJbh867-w2RciZYbHnRJ5_xM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:508835369670:android:64c4f9b1841f306cbafdc7",
         "android_client_info": {
           "package_name": "com.example.gasfleet"
@@ -48,6 +67,25 @@
         "mobilesdk_app_id": "1:508835369670:android:141aef599272ea0ebafdc7",
         "android_client_info": {
           "package_name": "com.example.testfleet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBl9SWdQyNAJbh867-w2RciZYbHnRJ5_xM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508835369670:android:07f3ec28d6bafff3bafdc7",
+        "android_client_info": {
+          "package_name": "me.amitshekhar.ridesharing"
         }
       },
       "oauth_client": [],

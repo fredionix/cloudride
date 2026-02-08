@@ -2,6 +2,8 @@ package me.amitshekhar.ridesharing
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -18,21 +20,29 @@ class signup : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivitySignupBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        //binding = ActivitySignupBinding.inflate(layoutInflater)
+        //setContentView(binding.root)
 
         firebaseAuth = FirebaseAuth.getInstance()
 
+        val loginButton = findViewById<Button>(R.id.loginBtn)
+        val submitButton = findViewById<Button>(R.id.submit_registration)
 
-        binding.textView.setOnClickListener {
+        loginButton.setOnClickListener {
             val intent = Intent(this, signin::class.java)
             startActivity(intent)
         }
 
-        binding.button.setOnClickListener {
-            val email = binding.emailEt.text.toString()
-            val pass = binding.passET.text.toString()
-            val confirmPass = binding.confirmPassEt.text.toString()
+
+        submitButton.setOnClickListener {
+            val email = findViewById<TextView>(R.id.email_input).text.toString()
+            val pass = findViewById<TextView>(R.id.password_input).text.toString()
+            val confirmPass = findViewById<TextView>(R.id.password_input_validation).text.toString()
+            val phone = findViewById<TextView>(R.id.phone_input).text.toString()
+            val role = findViewById<TextView>(R.id.role_input).text.toString()
+
+
+
 
             if (email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
                 if (pass == confirmPass) {

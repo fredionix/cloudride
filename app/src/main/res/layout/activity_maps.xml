@@ -26,7 +26,10 @@
         android:background="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+
+        
+        >
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/pickUpIndicator"
@@ -36,7 +39,9 @@
             android:background="@drawable/bg_circle_black"
             app:layout_constraintBottom_toBottomOf="@+id/pickUpTextView"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/pickUpTextView" />
+            app:layout_constraintTop_toTopOf="@+id/pickUpTextView"
+
+            />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/pickUpTextView"
@@ -58,7 +63,10 @@
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/pickUpIndicator"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+
+
+            />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="1dp"
@@ -67,7 +75,8 @@
             app:layout_constraintBottom_toTopOf="@+id/dropIndicator"
             app:layout_constraintEnd_toEndOf="@+id/pickUpIndicator"
             app:layout_constraintStart_toStartOf="@+id/pickUpIndicator"
-            app:layout_constraintTop_toBottomOf="@+id/pickUpIndicator" />
+            app:layout_constraintTop_toBottomOf="@+id/pickUpIndicator"
+            />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/dropIndicator"
@@ -77,7 +86,9 @@
             android:background="@android:color/black"
             app:layout_constraintBottom_toBottomOf="@+id/dropTextView"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/dropTextView" />
+            app:layout_constraintTop_toTopOf="@+id/dropTextView"
+
+            />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/dropTextView"
@@ -101,7 +112,9 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/dropIndicator"
-            app:layout_constraintTop_toBottomOf="@+id/pickUpTextView" />
+            app:layout_constraintTop_toBottomOf="@+id/pickUpTextView"
+            android:visibility="invisible"
+            />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.appcompat.widget.AppCompatTextView
