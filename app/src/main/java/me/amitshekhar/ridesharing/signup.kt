@@ -19,13 +19,14 @@ class signup : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_signup)
 
         //binding = ActivitySignupBinding.inflate(layoutInflater)
         //setContentView(binding.root)
 
         firebaseAuth = FirebaseAuth.getInstance()
 
-        val loginButton = findViewById<Button>(R.id.loginBtn)
+        val loginButton = findViewById<Button>(R.id.jumpToLogin)
         val submitButton = findViewById<Button>(R.id.submit_registration)
 
         loginButton.setOnClickListener {
@@ -39,7 +40,7 @@ class signup : AppCompatActivity() {
             val pass = findViewById<TextView>(R.id.password_input).text.toString()
             val confirmPass = findViewById<TextView>(R.id.password_input_validation).text.toString()
             val phone = findViewById<TextView>(R.id.phone_input).text.toString()
-            val role = findViewById<TextView>(R.id.role_input).text.toString()
+            //val role = findViewById<TextView>(R.id.role_input).text.toString()
 
 
 

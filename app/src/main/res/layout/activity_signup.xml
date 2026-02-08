@@ -10,7 +10,7 @@
 
     <EditText
         android:id="@+id/fullname_input"
-        android:layout_width="380dp"
+        android:layout_width="317dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:hint="FULLNAME"
@@ -22,7 +22,7 @@
 
     <EditText
         android:id="@+id/email_input"
-        android:layout_width="380dp"
+        android:layout_width="313dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:hint="EMAIL"
@@ -31,46 +31,44 @@
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         android:textSize="20sp" />
+
     <EditText
         android:id="@+id/password_input"
-        android:layout_width="match_parent"
+        android:layout_width="315dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:hint="PASSWORD"
+        android:inputType="textPassword"
+        android:padding="18dp"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
-        android:textSize="20sp"
-        android:padding="18dp"
-        android:inputType="textPassword" />
-
-
+        android:textSize="20sp" />
 
 
     <EditText
         android:id="@+id/password_input_validation"
-        android:layout_width="match_parent"
+        android:layout_width="315dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:hint="REPEAT PASSWORD"
+        android:inputType="textPassword"
+        android:padding="18dp"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
-        android:textSize="20sp"
-        android:padding="18dp"
-        android:inputType="textPassword" />
+        android:textSize="20sp" />
 
     <EditText
         android:id="@+id/phone_input"
-        android:layout_width="match_parent"
+        android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:hint="PHONE"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white"
-        android:textSize="20sp"
+        android:inputType="phone"
         android:padding="18dp"
         android:text="+62"
-        android:inputType="phone"
-        />
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        android:textSize="20sp" />
 
     <RadioGroup
         android:id="@+id/role_input"

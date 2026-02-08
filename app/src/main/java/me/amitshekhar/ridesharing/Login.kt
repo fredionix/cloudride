@@ -30,7 +30,9 @@ class Login : AppCompatActivity() {
         registerButton.setOnClickListener {
             //val intent = Intent(this, signup::class.java)
             //startActivity(intent)
-            Toast.makeText(this, "REGISTRATION +6289-777-777-20", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(this, "REGISTRATION +6289-777-777-20", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, signup::class.java)
+            startActivity(intent)
         }
         loginButton.setOnClickListener {
             val email =findViewById<TextView>(R.id.username_input).text.toString()

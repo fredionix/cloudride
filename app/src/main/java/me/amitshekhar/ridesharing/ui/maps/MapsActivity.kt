@@ -52,12 +52,14 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
+import com.google.firebase.auth.FirebaseAuth
 
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import org.bson.Document
 import kotlinx.coroutines.runBlocking
+import me.amitshekhar.ridesharing.Login
 import org.bson.BsonTimestamp
 
 
@@ -165,6 +167,13 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
             //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             //startActivity(intent)
 
+
+        }
+
+        binding.logoutButton.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            val intent = Intent(this, Login::class.java)
+            startActivity(intent)
 
         }
         binding.nextRideButton.setOnClickListener {
