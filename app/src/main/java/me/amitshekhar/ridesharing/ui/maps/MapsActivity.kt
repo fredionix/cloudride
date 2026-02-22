@@ -15,6 +15,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 
+
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -50,9 +51,14 @@ import me.amitshekhar.ridesharing.utils.ViewUtils
 import java.net.URI
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 
 
 import com.mongodb.ConnectionString
@@ -89,7 +95,10 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
     private var currentLatLngFromServer: LatLng? = null
     private var movingCabMarker: Marker? = null
 
-    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:14959/" // Replace with your actual connection string
+
+
+
+    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:19519/" // Replace with your actual connection string
 
     val settings = MongoClientSettings.builder()
         .applyConnectionString(ConnectionString(connectionStringUri))
@@ -97,9 +106,14 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
     val mongoClient = MongoClient.create(settings)
     val database = mongoClient.getDatabase("commoride_main") // Use your database name
-    val collection = database.getCollection<fleetStatus>("masterFleet")
+    val collection = database.getCollection<fleetPosition>("fleetPosition")
 
-    data class fleetStatus(val fleetLicensePlate: String, val latitude: String, val longitude: String, val capacity: Double,val timestamp: String)
+
+
+    data class fleetPosition(val fleetUsername: String, val latitude: String, val longitude: String, val capacity: Double,val timestamp: String)
+    val user = Firebase.auth.currentUser?.uid
+
+
 
     private fun connectDB(){
         runBlocking {
@@ -110,7 +124,8 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
 
                 println("Pinged your deployment. You successfully connected to MongoDB!")
-            } catch (e: Exception) {
+            }
+            catch (e: Exception) {
                 println("Connection failed: $e")
             } finally {
                 println("Connection failed")
@@ -131,6 +146,8 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         presenter = MapsPresenter(NetworkService())
         presenter.onAttach(this)
         //connectDB()
+
+
 
 
 
@@ -227,7 +244,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
     private fun setUpLocationListener() {
         fusedLocationProviderClient = FusedLocationProviderClient(this)
         // for getting the current location update after every 2 seconds
-        val locationRequest = LocationRequest().setInterval(5000).setFastestInterval(5000)
+        val locationRequest = LocationRequest().setInterval(10000).setFastestInterval(10000)
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
         locationCallback = object : LocationCallback() {
@@ -265,10 +282,10 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
                 animateCamera(currentLatLng!!)
                 runBlocking {
 
-                    val now: Instant = Clock.System.now()
-                    println("Current UTC Instant: $now")
+                    val nowLocalDateTime= Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    println("Current UTC Instant: $nowLocalDateTime")
                     val command = Document("ping", 1)
-                    val doc = fleetStatus("L 5701 DDY", lat.toString(), long.toString(), 1000.0, now.toString())
+                    val doc = fleetPosition(user.toString(), lat.toString(), long.toString(), 1000.0, nowLocalDateTime.toString())
                     val result = collection.insertOne(doc)
                     println("Document inserted successfully!")
                     val insertedId = result.insertedId
