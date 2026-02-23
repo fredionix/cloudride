@@ -15,6 +15,10 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 
+import com.mongodb.client.result.UpdateResult
+import com.mongodb.kotlin.client.coroutine.MongoCollection
+import kotlinx.coroutines.runBlocking
+
 
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.common.api.Status
@@ -63,6 +67,11 @@ import com.google.firebase.auth.auth
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
+import com.mongodb.MongoException
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Filters.eq
+import com.mongodb.client.model.UpdateOptions
+import com.mongodb.client.model.Updates
 import org.bson.Document
 import kotlinx.coroutines.runBlocking
 import me.amitshekhar.ridesharing.Login
@@ -278,11 +287,43 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
                     val nowLocalDateTime= Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                     println("Current UTC Instant: $nowLocalDateTime")
                     val command = Document("ping", 1)
-                    val doc = fleetPosition(user.toString(), lat.toString(), long.toString(), 1000.0, nowLocalDateTime.toString())
-                    val result = collection.insertOne(doc)
-                    println("Document inserted successfully!")
-                    val insertedId = result.insertedId
-                    println("Inserted ID: $insertedId")
+
+
+
+                    //val count = fleetPosition.countDocuments(eq("year", targetYear))
+                    //println("Documents from year $targetYear: $count")
+
+
+
+
+                    val query = Filters.eq(fleetPosition::fleetUsername.name, user.toString())
+                    //val update = Updates.set(fleetPosition::latitude.name, lat.toString())
+                    val updates = Updates.combine(
+                        Updates.set(fleetPosition::latitude.name, lat.toString()),
+                        Updates.set(fleetPosition::longitude.name, long.toString()),
+                        Updates.set(fleetPosition::timestamp.name, nowLocalDateTime.toString()),
+                        //Updates.currentDate(Movie::lastUpdated.name)
+                    )
+                    val options = UpdateOptions().upsert(true)
+                    try {
+                        val result = collection.updateOne(query, updates, options)
+
+                        println("Modified document count: " + result.modifiedCount)
+                        println("Upserted id: " + result.upsertedId) // only contains a non-null value when an upsert is performed
+                    } catch (e: MongoException) {
+                        System.err.println("Unable to update due to an error: $e")
+                        val doc = fleetPosition(user.toString(), lat.toString(), long.toString(), 1000.0, nowLocalDateTime.toString())
+                        val result = collection.insertOne(doc)
+                        println("Document inserted successfully!")
+                        val insertedId = result.insertedId
+                        println("Inserted ID: $insertedId")
+                    }
+
+
+
+
+
+
                 }
                         //presenter.requestNearbyCabs(currentLatLng!!)
                     //}
@@ -369,8 +410,10 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
     override fun onDestroy() {
         presenter.onDetach()
+        mongoClient.close()
         fusedLocationProviderClient?.removeLocationUpdates(locationCallback)
         super.onDestroy()
+
     }
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
