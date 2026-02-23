@@ -107,7 +107,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
 
 
-    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:16531/" // Replace with your actual connection string
+    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:11851/" // Replace with your actual connection string
 
     val settings = MongoClientSettings.builder()
         .applyConnectionString(ConnectionString(connectionStringUri))
@@ -119,7 +119,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
 
 
-    data class fleetPosition(val fleetUsername: String, val latitude: String, val longitude: String, val capacity: Double,val timestamp: String)
+    data class fleetPosition(val fleetUsername: String, val latitude: String, val longitude: String, val capacity: Double,val cargoType: String, val timestamp: String)
     val user = Firebase.auth.currentUser?.uid
 
 
@@ -302,6 +302,8 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
                         Updates.set(fleetPosition::latitude.name, lat.toString()),
                         Updates.set(fleetPosition::longitude.name, long.toString()),
                         Updates.set(fleetPosition::capacity.name, 1000.05),
+                        Updates.set(fleetPosition::cargoType.name, "CNG"),
+
                         Updates.set(fleetPosition::timestamp.name, nowLocalDateTime.toString()),
                         //Updates.currentDate(Movie::lastUpdated.name)
                     )

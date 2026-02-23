@@ -116,7 +116,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
 
 
-    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:16531/" // Replace with your actual connection string
+    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:11851/" // Replace with your actual connection string
 
     val settings = MongoClientSettings.builder()
         .applyConnectionString(ConnectionString(connectionStringUri))
@@ -131,12 +131,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
     val user = Firebase.auth.currentUser?.uid
     private fun connectDB(){
         runBlocking {
-
-
-
             try {
-
-
                 println("Pinged your deployment. You successfully connected to MongoDB!")
             }
             catch (e: Exception) {
@@ -164,7 +159,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
         //memangggil untuk fungsi standby ketika di klik
 
 
-        setUpClickListener()
+
 
 
     }
@@ -210,10 +205,14 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
 
             runBlocking {
+                //filter only product that requested by customer and at its capacity and on time target
                 val filter = Filters.and(Filters.eq("cargoType","CNG" ))
                 val fleetList = fleetCollection.find(filter).toList()
                 var nearestDistance = 99999999999999999
                 var distance: Long = 0L
+
+                var fleetNearestLatitude:String=""
+                var fleetNearestLongitude:String=""
                 var fleetUsername:String = ""
                 for (fleet in fleetList) {
                     Log.d("fleetList", fleet.fleetUsername)
@@ -223,6 +222,9 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
                     if(nearestDistance > distance){
                         nearestDistance = distance
                         fleetUsername = user.toString()
+                        fleetNearestLatitude = fleet.latitude.toString()
+                        fleetNearestLongitude = fleet.longitude.toString()
+
 
                         Log.d("fleetNearest", fleet.fleetUsername+", "+nearestDistance+" M")
                     }
@@ -236,7 +238,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
                 val volume: Double? = binding.quantityInputTextView.text.toString().toDoubleOrNull()
                 if (volume == null){
-                    val doc = unloadingPosition(user.toString(), currentLatLng!!.latitude.toString(), currentLatLng!!.longitude.toString(), dropLatLng!!.latitude.toString(),dropLatLng!!.longitude.toString(), 1000200.05, nowLocalDateTime.toString())
+                    val doc = unloadingPosition(user.toString(), currentLatLng!!.latitude.toString(), currentLatLng!!.longitude.toString(), fleetNearestLatitude,fleetNearestLongitude, 1000200.05, nowLocalDateTime.toString())
                     val result = unloadCollection.insertOne(doc)
                     println("Document inserted successfully!")
                     println("Inserted ID: $result.insertedId")
@@ -273,6 +275,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
                     when {
                         PermissionUtils.isLocationEnabled(this) -> {
                             setUpLocationListener()
+                            setUpClickListener()
                         }
 
                         else -> {
