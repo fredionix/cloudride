@@ -94,7 +94,7 @@ class Login : AppCompatActivity() {
         super.onStart()
 
         if(firebaseAuth.currentUser != null){
-            val intent = Intent(this, MapsActivity::class.java)
+            val intent = Intent(this, customerActivity::class.java)
             startActivity(intent)
         }
     }

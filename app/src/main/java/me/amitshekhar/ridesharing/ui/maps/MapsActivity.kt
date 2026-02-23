@@ -301,6 +301,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
                     val updates = Updates.combine(
                         Updates.set(fleetPosition::latitude.name, lat.toString()),
                         Updates.set(fleetPosition::longitude.name, long.toString()),
+                        Updates.set(fleetPosition::capacity.name, 1000.05),
                         Updates.set(fleetPosition::timestamp.name, nowLocalDateTime.toString()),
                         //Updates.currentDate(Movie::lastUpdated.name)
                     )
@@ -312,17 +313,12 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
                         println("Upserted id: " + result.upsertedId) // only contains a non-null value when an upsert is performed
                     } catch (e: MongoException) {
                         System.err.println("Unable to update due to an error: $e")
-                        val doc = fleetPosition(user.toString(), lat.toString(), long.toString(), 1000.0, nowLocalDateTime.toString())
-                        val result = collection.insertOne(doc)
-                        println("Document inserted successfully!")
-                        val insertedId = result.insertedId
-                        println("Inserted ID: $insertedId")
+//                        val doc = fleetPosition(user.toString(), lat.toString(), long.toString(), 1000.0, nowLocalDateTime.toString())
+//                        val result = collection.insertOne(doc)
+//                        println("Document inserted successfully!")
+//                        val insertedId = result.insertedId
+//                        println("Inserted ID: $insertedId")
                     }
-
-
-
-
-
 
                 }
                         //presenter.requestNearbyCabs(currentLatLng!!)

@@ -22,6 +22,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 
+import android.location.Location
 
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -69,6 +70,9 @@ import com.google.firebase.auth.auth
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Projections
+import kotlinx.coroutines.flow.toList
 import org.bson.Document
 import kotlinx.coroutines.runBlocking
 import me.amitshekhar.ridesharing.Login
@@ -158,8 +162,30 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
         //presenter.onAttach(this)
         //connectDB()
         //memangggil untuk fungsi standby ketika di klik
+
+
         setUpClickListener()
 
+
+    }
+
+    fun getDistanceBetween(
+        startLatitude: Double,
+        startLongitude: Double,
+        destinationLatitude: Double,
+        destinationLongitude: Double
+    ): Long {
+        val locationA = Location("point A").apply {
+            latitude = startLatitude
+            longitude = startLongitude
+        }
+        val locationB = Location("point B").apply {
+            latitude = destinationLatitude
+            longitude = destinationLongitude
+        }
+
+        // distanceTo returns the distance in meters
+        return locationA.distanceTo(locationB).toLong()
     }
     private fun setUpClickListener() {
         //origin listener autocomplete
@@ -178,7 +204,31 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
             //binding.fleetPositionTextView.isEnabled = false
             //presenter.requestCab(pickUpLatLng!!, dropLatLng!!)
 
+                // 2. Select with a filter (e.g., field "status" equals "active")
+                //val filteredDocs = fleetCollection.find(Filters.eq("cargoType", "CNG")).toList()
+
+
+
             runBlocking {
+                val filter = Filters.and(Filters.eq("cargoType","CNG" ))
+                val fleetList = fleetCollection.find(filter).toList()
+                var nearestDistance = 99999999999999999
+                var distance: Long = 0L
+                var fleetUsername:String = ""
+                for (fleet in fleetList) {
+                    Log.d("fleetList", fleet.fleetUsername)
+                    Log.d("fleetList", fleet.latitude+","+fleet.longitude.toDouble())
+                    distance = getDistanceBetween(fleet.latitude.toDouble(), fleet.longitude.toDouble(), currentLatLng!!.latitude.toDouble(), currentLatLng!!.longitude.toDouble()).toLong()
+
+                    if(nearestDistance > distance){
+                        nearestDistance = distance
+                        fleetUsername = user.toString()
+
+                        Log.d("fleetNearest", fleet.fleetUsername+", "+nearestDistance+" M")
+                    }
+
+
+                }
 
                 val nowLocalDateTime= Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 println("Current UTC Instant: $nowLocalDateTime")
@@ -186,7 +236,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
                 val volume: Double? = binding.quantityInputTextView.text.toString().toDoubleOrNull()
                 if (volume == null){
-                    val doc = unloadingPosition(user.toString(), currentLatLng!!.latitude.toString(), currentLatLng!!.longitude.toString(), dropLatLng!!.latitude.toString(),dropLatLng!!.longitude.toString(), 1000200.00, nowLocalDateTime.toString())
+                    val doc = unloadingPosition(user.toString(), currentLatLng!!.latitude.toString(), currentLatLng!!.longitude.toString(), dropLatLng!!.latitude.toString(),dropLatLng!!.longitude.toString(), 1000200.05, nowLocalDateTime.toString())
                     val result = unloadCollection.insertOne(doc)
                     println("Document inserted successfully!")
                     println("Inserted ID: $result.insertedId")
@@ -234,7 +284,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
                 else -> {
                     PermissionUtils.requestAccessFineLocationPermission(
                         this,
-                        customerActivity.Companion.LOCATION_PERMISSION_REQUEST_CODE
+                        LOCATION_PERMISSION_REQUEST_CODE
                     )
                 }
             }
@@ -243,19 +293,19 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == customerActivity.Companion.PICKUP_REQUEST_CODE || requestCode == customerActivity.Companion.DROP_REQUEST_CODE) {
+        if (requestCode == PICKUP_REQUEST_CODE || requestCode == DROP_REQUEST_CODE) {
             when (resultCode) {
                 RESULT_OK -> {
                     val place = Autocomplete.getPlaceFromIntent(data!!)
-                    Log.d(customerActivity.Companion.TAG, "Place: " + place.name + ", " + place.id + ", " + place.latLng)
+                    Log.d(TAG, "Place: " + place.name + ", " + place.id + ", " + place.latLng)
                     when (requestCode) {
-                        customerActivity.Companion.PICKUP_REQUEST_CODE -> {
+                        PICKUP_REQUEST_CODE -> {
                             binding.currentDropTextView.text = place.name
                             pickUpLatLng = place.latLng
                             checkAndShowRequestButton()
                         }
 
-                        customerActivity.Companion.DROP_REQUEST_CODE -> {
+                        DROP_REQUEST_CODE -> {
                             binding.fleetPositionTextView.text = place.name
                             dropLatLng = place.latLng
                             checkAndShowRequestButton()
@@ -265,11 +315,11 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
                 AutocompleteActivity.RESULT_ERROR -> {
                     val status: Status = Autocomplete.getStatusFromIntent(data!!)
-                    Log.d(customerActivity.Companion.TAG, status.statusMessage!!)
+                    Log.d(TAG, status.statusMessage!!)
                 }
 
                 RESULT_CANCELED -> {
-                    Log.d(customerActivity.Companion.TAG, "Place Selection Canceled")
+                    Log.d(TAG, "Place Selection Canceled")
                 }
             }
         }
@@ -277,7 +327,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
 
     override fun onDestroy() {
-        presenter.onDetach()
+        //presenter.onDetach()
         fusedLocationProviderClient?.removeLocationUpdates(locationCallback)
         super.onDestroy()
     }
@@ -384,7 +434,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            customerActivity.Companion.LOCATION_PERMISSION_REQUEST_CODE -> {
+            LOCATION_PERMISSION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     when {
                         PermissionUtils.isLocationEnabled(this) -> {
