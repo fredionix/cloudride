@@ -7,11 +7,11 @@
     <string name="current_location">Current Location</string>
     <string name="where_to">Where to?</string>
     <string name="pickup_location">Pickup Location</string>
-    <string name="request_cab">Request CNG Truck</string>
-    <string name="your_cab_is_arriving">Your CNG Truck is Arriving</string>
-    <string name="requesting_your_cab">Requesting your CNG Truck</string>
-    <string name="your_cab_is_booked">Your CNG Truck is Booked</string>
-    <string name="your_cab_has_arrived">Your CNG Truck has Arrived</string>
+    <string name="request_cab">Request Commodity Truck</string>
+    <string name="your_cab_is_arriving">Your Commodity Truck is Arriving</string>
+    <string name="requesting_your_cab">Requesting your Commodity Truck</string>
+    <string name="your_cab_is_booked">Your Commodity Truck is Booked</string>
+    <string name="your_cab_has_arrived">Your Commodity Truck has Arrived</string>
     <string name="you_are_on_a_trip">You are on a trip</string>
     <string name="trip_end">Trip End</string>
     <string name="password">PASSWORD</string>
@@ -31,4 +31,11 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
+
+    <string-array name="roles_array">
+        <item>FLEET</item>
+        <item>CUSTOMER</item>
+    </string-array>
+
+
 </resources>

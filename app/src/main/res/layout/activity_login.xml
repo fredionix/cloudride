@@ -20,7 +20,6 @@
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         android:textSize="20sp"
-
         android:padding="18dp"
         android:inputType="text" />
     <EditText
@@ -32,9 +31,20 @@
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         android:textSize="20sp"
-
         android:padding="18dp"
         android:inputType="textPassword" />
+
+    <Spinner
+        android:id="@+id/roles_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        android:textSize="20sp"
+        android:padding="18dp"
+         />
+
     <Button
         android:id="@+id/loginBtn"
         android:layout_width="match_parent"

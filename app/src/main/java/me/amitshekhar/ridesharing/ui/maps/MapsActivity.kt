@@ -98,7 +98,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
 
 
-    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:19519/" // Replace with your actual connection string
+    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:16531/" // Replace with your actual connection string
 
     val settings = MongoClientSettings.builder()
         .applyConnectionString(ConnectionString(connectionStringUri))
@@ -146,13 +146,6 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         presenter = MapsPresenter(NetworkService())
         presenter.onAttach(this)
         //connectDB()
-
-
-
-
-
-
-
         //memangggil untuk fungsi standby ketika di klik
         setUpClickListener()
     }
@@ -346,6 +339,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
         movingCabMarker = null
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun onStart() {
         super.onStart()
         // check if get gps
