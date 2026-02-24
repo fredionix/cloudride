@@ -90,7 +90,7 @@
 
             />
 
-        <androidx.appcompat.widget.AppCompatTextView
+        <Spinner
             android:id="@+id/fleetPositionTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -109,6 +109,7 @@
             android:textColor="@android:color/black"
             android:textColorHint="@android:color/darker_gray"
             android:textSize="16sp"
+            android:enabled="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/fleetPositionIndicator"

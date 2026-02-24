@@ -1,29 +1,20 @@
 package me.amitshekhar
 
+
 import android.Manifest
-import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-
-
-import org.bson.BsonDocument
-import org.bson.BsonString
-import org.bson.BsonInt64
-import org.bson.types.ObjectId
-import org.bson.BsonObjectId
-import org.bson.json.JsonWriterSettings
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
-import android.net.Uri
+import android.location.Location
+import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.view.View
-
-import android.location.Location
-
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import android.widget.Toast
+import androidx.annotation.RequiresPermission
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -36,55 +27,38 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
-import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
-import com.mongodb.kotlin.client.coroutine.MongoClient
-import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import kotlinx.coroutines.runBlocking
-import me.amitshekhar.ridesharing.R
-import me.amitshekhar.ridesharing.data.network.NetworkService
-import me.amitshekhar.ridesharing.databinding.ActivityMapsBinding
-import me.amitshekhar.ridesharing.utils.AnimationUtils
-import me.amitshekhar.ridesharing.utils.MapUtils
-import me.amitshekhar.ridesharing.utils.PermissionUtils
-import me.amitshekhar.ridesharing.utils.ViewUtils
-import java.net.URI
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-
-import android.widget.Toast
-import androidx.annotation.RequiresPermission
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-
-
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Projections
+import com.mongodb.client.model.Filters.eq
+import com.mongodb.client.model.Updates
+import com.mongodb.kotlin.client.coroutine.MongoClient
 import kotlinx.coroutines.flow.toList
-import org.bson.Document
 import kotlinx.coroutines.runBlocking
-import me.amitshekhar.ridesharing.Login
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import me.amitshekhar.ridesharing.R
 import me.amitshekhar.ridesharing.databinding.ActivityCustomerBinding
-import me.amitshekhar.ridesharing.ui.maps.MapsActivity
-import me.amitshekhar.ridesharing.ui.maps.MapsActivity.fleetPosition
 import me.amitshekhar.ridesharing.ui.maps.MapsPresenter
 import me.amitshekhar.ridesharing.ui.maps.MapsView
-import org.bson.BsonTimestamp
-
-
-
+import me.amitshekhar.ridesharing.utils.MapUtils
+import me.amitshekhar.ridesharing.utils.PermissionUtils
+import me.amitshekhar.ridesharing.utils.ViewUtils
+import org.bson.Document
+import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 
 class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
@@ -116,7 +90,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
 
 
-    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:11851/" // Replace with your actual connection string
+    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:19819/" // Replace with your actual connection string
 
     val settings = MongoClientSettings.builder()
         .applyConnectionString(ConnectionString(connectionStringUri))
@@ -126,7 +100,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
     val database = mongoClient.getDatabase("commoride_main") // Use your database name
     val fleetCollection = database.getCollection<fleetPosition>("fleetPosition")
     val unloadCollection = database.getCollection<unloadingPosition>("requestOrder")
-    data class unloadingPosition(val unloadingUsername: String, val droplatitude: String, val droplongitude: String,val fleetlatitude: String, val fleetlongitude: String, val capacity: Double,val timestamp: String)
+    data class unloadingPosition(val unloadingUsername: String, val droplatitude: String, val droplongitude: String, val fleetlatitude: String, val fleetlongitude: String, val capacity: Double, val fleetUsername: String, val estimatedDistance:Long, val estimatedTravelTime: Long, val status : Int, val currentDate: String , val timestamp: String)
     data class fleetPosition(val fleetUsername: String, val latitude: String, val longitude: String, val capacity: Double,val timestamp: String)
     val user = Firebase.auth.currentUser?.uid
     private fun connectDB(){
@@ -188,13 +162,16 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
             launchLocationAutoCompleteActivity(PICKUP_REQUEST_CODE)
         }
         //tujuan listener
-        binding.fleetPositionTextView.setOnClickListener {
-            launchLocationAutoCompleteActivity(DROP_REQUEST_CODE)
-        }
+//        binding.fleetPositionTextView.setOnClickListener {
+//            //launchLocationAutoCompleteActivity(DROP_REQUEST_CODE)
+//            binding.fleetPositionTextView.isEnabled = true
+//        }
         binding.requestCabButton.setOnClickListener {
             binding.statusTextView.visibility = View.VISIBLE
             binding.statusTextView.text = getString(R.string.requesting_your_cab)
             binding.requestCabButton.isEnabled = false
+            var volumeRequested: Double = 1000.0
+            val volumeRequested2: Double? = binding.quantityInputTextView.text.toString().toDoubleOrNull()
             //binding.currentDropTextView.isEnabled = false
             //binding.fleetPositionTextView.isEnabled = false
             //presenter.requestCab(pickUpLatLng!!, dropLatLng!!)
@@ -213,35 +190,76 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
                 var fleetNearestLatitude:String=""
                 var fleetNearestLongitude:String=""
-                var fleetUsername:String = ""
+                var fleetNearestUsername:String = ""
                 for (fleet in fleetList) {
                     Log.d("fleetList", fleet.fleetUsername)
                     Log.d("fleetList", fleet.latitude+","+fleet.longitude.toDouble())
                     distance = getDistanceBetween(fleet.latitude.toDouble(), fleet.longitude.toDouble(), currentLatLng!!.latitude.toDouble(), currentLatLng!!.longitude.toDouble()).toLong()
+                    if (distance < 50000  && fleet.capacity >= volumeRequested ) {
+                        //get nearest distance
+                        if(nearestDistance > distance){
+                            nearestDistance = distance
+                            fleetNearestUsername = fleet.fleetUsername
+                            fleetNearestLatitude = fleet.latitude.toString()
+                            fleetNearestLongitude = fleet.longitude.toString()
 
-                    if(nearestDistance > distance){
-                        nearestDistance = distance
-                        fleetUsername = user.toString()
-                        fleetNearestLatitude = fleet.latitude.toString()
-                        fleetNearestLongitude = fleet.longitude.toString()
-
-
+                        }
                         Log.d("fleetNearest", fleet.fleetUsername+", "+nearestDistance+" M")
                     }
-
-
+                //end of populating list
                 }
+
+
+
+                val spinner: Spinner = findViewById(R.id.fleetPositionTextView)
+                val fruits = arrayOf("Apple", "Mango", "Banana")
+                val itemList = listOf("Option 1", "Option 2", "Option 3", "Option 4")
+                val countries = arrayOf("Indonesia", "United States", "United Kingdom", "Australia", "Japan")
+
+                binding.fleetPositionTextView.isEnabled = true
+
+                //update the nearest fleet cargo volume
+//                val collection = database.getCollection<Document>("fleetPosition")
+//                // Increment the "score" field by 10
+//                val result = collection.updateOne(
+//                    eq("fleetUsername", fleetNearestUsername),
+//                    Updates.inc("capacity", -volumeRequested)
+//                )
+//                Log.d("fleetNearest", "Documents matched: ${result.matchedCount}")
+
+
 
                 val nowLocalDateTime= Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 println("Current UTC Instant: $nowLocalDateTime")
-                val command = Document("ping", 1)
 
-                val volume: Double? = binding.quantityInputTextView.text.toString().toDoubleOrNull()
-                if (volume == null){
-                    val doc = unloadingPosition(user.toString(), currentLatLng!!.latitude.toString(), currentLatLng!!.longitude.toString(), fleetNearestLatitude,fleetNearestLongitude, 1000200.05, nowLocalDateTime.toString())
+                
+
+                val simpleDateFormat = SimpleDateFormat("ddMMYYYY", Locale.getDefault())
+                val currentDate: String = simpleDateFormat.format(Date())
+
+                val command = Document("ping", 1)
+                var estimatedTravelTime : Long = distance/333
+                //status dict
+                //0 created, antri
+                //1 dipickup fleet / on going / otw
+                //2 arrive at unloading
+                //3 unloading complete / customer confirm
+
+
+                if (volumeRequested != null || volumeRequested!=0.0){
+                    val doc = unloadingPosition(
+                        user.toString(),
+                        currentLatLng!!.latitude.toString(), currentLatLng!!.longitude.toString(),
+                        fleetNearestLatitude,fleetNearestLongitude,
+                        volumeRequested,
+                        fleetNearestUsername,
+                        distance,estimatedTravelTime,
+                        0,
+                        currentDate,
+                        nowLocalDateTime.toString())
                     val result = unloadCollection.insertOne(doc)
                     println("Document inserted successfully!")
-                    println("Inserted ID: $result.insertedId")
+                    Log.d("fleetNearest","Inserted ID: $result.insertedId")
                 }
 
             }
@@ -265,6 +283,8 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 //        }
 
     }
+
+
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun onStart() {
         super.onStart()
@@ -309,9 +329,9 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
                         }
 
                         DROP_REQUEST_CODE -> {
-                            binding.fleetPositionTextView.text = place.name
-                            dropLatLng = place.latLng
-                            checkAndShowRequestButton()
+                            //binding.fleetPositionTextView.text = place.name
+                            //dropLatLng = place.latLng
+                            //checkAndShowRequestButton()
                         }
                     }
                 }

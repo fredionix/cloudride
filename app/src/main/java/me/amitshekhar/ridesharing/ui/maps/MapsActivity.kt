@@ -107,7 +107,7 @@ class MapsActivity : AppCompatActivity(), MapsView, OnMapReadyCallback {
 
 
 
-    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:11851/" // Replace with your actual connection string
+    val connectionStringUri = "mongodb://0.tcp.ap.ngrok.io:19819/" // Replace with your actual connection string
 
     val settings = MongoClientSettings.builder()
         .applyConnectionString(ConnectionString(connectionStringUri))
