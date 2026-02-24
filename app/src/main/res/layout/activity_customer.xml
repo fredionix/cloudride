@@ -14,7 +14,11 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="160dp"
+        />
+
+
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -22,7 +26,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:layout_marginTop="108dp"
+        android:layout_marginTop="35dp"
         android:layout_marginEnd="12dp"
         android:background="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -31,6 +35,7 @@
 
 
         >
+
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/currentDropIndicator"
@@ -180,31 +185,6 @@
 
     </androidx.appcompat.widget.AppCompatButton>
 
-    <TextView
-        android:id="@+id/quantityInputTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="250dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="447dp"
-        android:background="@android:color/white"
-        android:hint="Volume Requested"
-        android:inputType="numberDecimal"
-        android:paddingStart="8dp"
-        android:paddingTop="6dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="6dp"
-        android:textColor="@android:color/black"
-        android:textColorHint="@android:color/darker_gray"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

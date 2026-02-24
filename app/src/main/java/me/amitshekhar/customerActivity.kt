@@ -59,6 +59,11 @@ import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import kotlin.time.*
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
+
 
 class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
@@ -100,7 +105,9 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
     val database = mongoClient.getDatabase("commoride_main") // Use your database name
     val fleetCollection = database.getCollection<fleetPosition>("fleetPosition")
     val unloadCollection = database.getCollection<unloadingPosition>("requestOrder")
-    data class unloadingPosition(val unloadingUsername: String, val droplatitude: String, val droplongitude: String, val fleetlatitude: String, val fleetlongitude: String, val capacity: Double, val fleetUsername: String, val estimatedDistance:Long, val estimatedTravelTime: Long, val status : Int, val currentDate: String , val timestamp: String)
+    data class unloadingPosition(val unloadingUsername: String, val droplatitude: String, val droplongitude: String, val fleetlatitude: String,
+                                 val fleetlongitude: String, val capacity: Double, val fleetUsername: String, val estimatedDistance:Long, val estimatedTravelTime: Long,
+                                 val status : Int, val currentDate: String , val timestamp: String, val epochMilisecond:Long)
     data class fleetPosition(val fleetUsername: String, val latitude: String, val longitude: String, val capacity: Double,val timestamp: String)
     val user = Firebase.auth.currentUser?.uid
     private fun connectDB(){
@@ -171,7 +178,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
             binding.statusTextView.text = getString(R.string.requesting_your_cab)
             binding.requestCabButton.isEnabled = false
             var volumeRequested: Double = 1000.0
-            val volumeRequested2: Double? = binding.quantityInputTextView.text.toString().toDoubleOrNull()
+            //val volumeRequested2: Double? = binding.quantityInputTextView.text.toString().toDoubleOrNull()
             //binding.currentDropTextView.isEnabled = false
             //binding.fleetPositionTextView.isEnabled = false
             //presenter.requestCab(pickUpLatLng!!, dropLatLng!!)
@@ -231,8 +238,9 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
 
                 val nowLocalDateTime= Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 println("Current UTC Instant: $nowLocalDateTime")
+                val epochMilisecond : Long = Clock.System.now().toEpochMilliseconds()
 
-                
+
 
                 val simpleDateFormat = SimpleDateFormat("ddMMYYYY", Locale.getDefault())
                 val currentDate: String = simpleDateFormat.format(Date())
@@ -256,7 +264,7 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
                         distance,estimatedTravelTime,
                         0,
                         currentDate,
-                        nowLocalDateTime.toString())
+                        nowLocalDateTime.toString(), epochMilisecond)
                     val result = unloadCollection.insertOne(doc)
                     println("Document inserted successfully!")
                     Log.d("fleetNearest","Inserted ID: $result.insertedId")
@@ -443,11 +451,6 @@ class customerActivity : AppCompatActivity(), MapsView, OnMapReadyCallback{
             binding.requestCabButton.isEnabled = true
         }
     }
-
-
-
-
-
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun onRequestPermissionsResult(
